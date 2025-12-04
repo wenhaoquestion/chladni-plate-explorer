@@ -1,0 +1,173 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #111323 0%, #04040a 60%, #020208);
+    color: #f5f7ff;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+/* Main layout */
+#app {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 1400px;
+    height: 100vh;
+    padding: 16px;
+    gap: 16px;
+}
+
+/* Visual panel (canvas) */
+.visual-panel {
+    flex: 1.35;
+    background: radial-gradient(circle at center, #1b1f39, #050612 70%);
+    border-radius: 24px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.75);
+    position: relative;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+#chladniCanvas {
+    flex: 1;
+    border-radius: 18px;
+    background: #05060b;
+    display: block;
+}
+
+/* Mode info overlay */
+.mode-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding-top: 8px;
+    color: #c3c8ff;
+}
+
+.mode-info span {
+    opacity: 0.9;
+}
+
+/* Control panel (sidebar) */
+.control-panel {
+    flex: 1;
+    background: rgba(7, 10, 28, 0.96);
+    border-radius: 24px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.65);
+    padding: 20px 22px;
+    overflow-y: auto;
+}
+
+.control-panel h1 {
+    font-size: 1.7rem;
+    margin: 0 0 12px;
+    letter-spacing: 0.03em;
+}
+
+.controls {
+    border-bottom: 1px solid rgba(200, 204, 255, 0.2);
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+}
+
+.control-group {
+    margin-bottom: 14px;
+}
+
+.control-group h2 {
+    font-size: 1.05rem;
+    margin: 10px 0;
+}
+
+label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.value-label {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    color: #9dd6ff;
+}
+
+/* Inputs */
+input[type="range"] {
+    width: 100%;
+    accent-color: #6cc6ff;
+}
+
+select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(180, 190, 255, 0.4);
+    background: rgba(5, 11, 30, 0.8);
+    color: #f3f4ff;
+    font-size: 0.9rem;
+}
+
+/* Explanation text */
+.explanation h2,
+.explanation h3 {
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-size: 1rem;
+}
+
+.explanation p {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 4px 0;
+    color: #dde0ff;
+}
+
+.explanation ul {
+    padding-left: 20px;
+    margin: 6px 0;
+}
+
+.explanation li {
+    font-size: 0.88rem;
+    margin-bottom: 3px;
+}
+
+/* Math formulas block */
+.formula {
+    text-align: center;
+}
+
+/* Utility */
+.hidden {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    #app {
+        flex-direction: column;
+    }
+
+    .control-panel {
+        max-height: 45vh;
+    }
+}

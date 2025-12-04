@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Real-Time Chladni Plate Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- MathJax for formulas -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div id="app">
+    <!-- Left: canvas -->
+    <div class="visual-panel">
+        <canvas id="chladniCanvas"></canvas>
+        <div class="mode-info">
+            <span id="modeLabel"></span>
+            <span id="freqLabel"></span>
+        </div>
+    </div>
+
+    <!-- Right: controls + explanation -->
+    <div class="control-panel">
+        <h1>Chladni Plate Explorer</h1>
+
+        <section class="controls">
+            <div class="control-group">
+                <label for="shapeSelect">Plate shape</label>
+                <select id="shapeSelect">
+                    <option value="square">Square plate</option>
+                    <option value="circle">Circular plate</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="sizeSlider">
+                    Plate size (relative)
+                    <span class="value-label" id="sizeValue"></span>
+                </label>
+                <input
+                        type="range"
+                        id="sizeSlider"
+                        min="0.6"
+                        max="1.2"
+                        step="0.01"
+                        value="0.9"
+                />
+            </div>
+
+            <div class="control-group">
+                <label for="freqSlider">
+                    Driving frequency (Hz)
+                    <span class="value-label" id="freqValue">440</span>
+                </label>
+                <input
+                        type="range"
+                        id="freqSlider"
+                        min="20"
+                        max="20000"
+                        step="1"
+                        value="440"
+                />
+            </div>
+        </section>
+
+        <section class="explanation">
+            <h2>What are Chladni patterns?</h2>
+            <p>
+                In a real Chladni experiment, you clamp a thin plate, sprinkle
+                sand on it, and sweep the vibration <strong>frequency in Hz</strong>
+                with a speaker or oscillator. At special resonant frequencies,
+                the plate forms stable standing waves. The sand is shaken away
+                from regions of large motion and accumulates along
+                <strong>nodal lines</strong>, where the displacement is (almost) zero.
+            </p>
+
+            <h3>Square plate mode model</h3>
+            <p>
+                For a <strong>center-clamped square plate</strong> of side length $L$,
+                a standard approximation for the mode shape with indices $(m,n)$ is
+            </p>
+            <p class="formula">
+                $$u_{mn}(x,y) =
+                \cos\!\left(\frac{n\pi x}{L}\right)
+                \cos\!\left(\frac{m\pi y}{L}\right)
+                -\cos\!\left(\frac{m\pi x}{L}\right)
+                \cos\!\left(\frac{n\pi y}{L}\right)$$
+            </p>
+            <p>
+                Here $(x,y)$ run over the plate area and $m,n$ are positive integers
+                with $m\neq n$.  Each pair $(m,n)$ produces a characteristic pattern
+                of nodal lines, qualitatively matching traditional photographs of
+                Chladni figures on a square plate.
+            </p>
+
+            <h3>Circular plate mode model</h3>
+            <p>
+                Exact circular plate modes involve Bessel functions. In this demo
+                we use a simplified but visually similar family:
+            </p>
+            <p class="formula">
+                $$u_{m n_r}(r,\theta) \approx
+                \cos(m\theta)\,
+                \cos\!\left(\frac{n_r \pi r}{R}\right),$$
+            </p>
+            <p>
+                where $(r,\theta)$ are polar coordinates on the plate, $R$ is the
+                radius, $m$ counts angular lobes and $n_r$ counts radial nodes.
+                Again, each integer pair $(m,n_r)$ gives a distinct nodal pattern.
+            </p>
+
+            <h3>Ordering the modes</h3>
+            <p>
+                In an ideal thin plate, the natural (eigen)frequencies
+                $f_{mn}$ are roughly ordered by a
+                mode-index $k_{mn}=\sqrt{m^2+n^2}$:
+            </p>
+            <p class="formula">
+                $$k_{mn} = \sqrt{m^2+n^2},\qquad
+                f_{mn} \propto \frac{k_{mn}}{L^2}.$$
+            </p>
+            <p>
+                For visualization we do not try to reproduce exact physical values
+                of $f_{mn}$.  Instead, we take a finite list of modes
+                $(m_i,n_i)$ (or $(m_i,n_{r,i})$ for the circular plate), sort them
+                by increasing $k_i$, and then spread their “reference frequencies”
+                across the full slider range from $20$ Hz to $20\,000$ Hz on a
+                logarithmic scale:
+            </p>
+            <p class="formula">
+                $$\log f_i
+                = \log f_{\min}
+                + \frac{i}{N-1}\bigl(\log f_{\max}-\log f_{\min}\bigr),$$
+            </p>
+            <p>
+                where $f_{\min}=20\text{ Hz}$, $f_{\max}=20000\text{ Hz}$,
+                and $N$ is the number of modes we include.
+                The <strong>plate size</strong> slider effectively
+                rescales these reference frequencies like $1/L^2$, so shrinking
+                the plate shifts all resonances toward higher frequencies.
+            </p>
+
+            <h3>How this demo uses the frequency slider</h3>
+            <p>
+                When you move the <strong>Driving frequency</strong> slider to a
+                value $f_{\mathrm{drive}}$, we locate its position on the same
+                logarithmic axis as the reference frequencies:
+            </p>
+            <p class="formula">
+                $$t = \frac{\log f_{\mathrm{drive}} - \log f_{\min}}
+                {\log f_{\max} - \log f_{\min}},\qquad 0\le t\le 1.$$
+            </p>
+            <p>
+                This parameter $t$ is then converted into a continuous index
+                between two neighbouring modes in our sorted list:
+            </p>
+            <p class="formula">
+                $$p = t\,(N-1),\qquad
+                i_0 = \lfloor p \rfloor,\qquad
+                i_1 = \min(i_0+1,\,N-1),\qquad
+                \alpha = p - i_0.$$
+            </p>
+            <p>
+                Finally, instead of showing only one mode, the visualized
+                displacement field is a smooth blend of the two adjacent
+                mode shapes:
+            </p>
+            <p class="formula">
+                $$u(x,y;f_{\mathrm{drive}}) =
+                (1-\alpha)\,u_{i_0}(x,y) + \alpha\,u_{i_1}(x,y).$$
+            </p>
+            <p>
+                At the discrete reference frequencies $f_i$ the weight
+                $\alpha$ is either $0$ or $1$, so we obtain a clean single
+                Chladni figure.  Between those values, the pattern morphs
+                continuously from one mode to the next, illustrating how the
+                nodal structure changes as we move through the spectrum.
+            </p>
+
+            <h3>Nodal lines in the rendering</h3>
+            <p>
+                On the canvas, the plate is sampled on a dense grid of points.
+                For each point $(x,y)$ inside the plate, we evaluate
+                $u(x,y;f_{\mathrm{drive}})$. Points where
+            </p>
+            <p class="formula">
+                $$|u(x,y;f_{\mathrm{drive}})| &lt; \varepsilon$$
+            </p>
+            <p>
+                for a small threshold $\varepsilon$ are plotted as bright dots.
+                The visible curves formed by these dots are the approximate
+                <strong>nodal lines</strong> for the blended mode at the current
+                driving frequency.  Because of the smooth blending in the
+                formula above, these nodal lines move and change shape
+                continuously as you drag the frequency slider.
+            </p>
+        </section>
+
+    </div>
+</div>
+
+<script type="module" src="ui.js"></script>
+</body>
+</html>
